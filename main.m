@@ -7,11 +7,12 @@ params.g = 9.81;       % gravit. accel. (m/s^2)
 
 % dimensionless params
 params.normalize = false;
+params.M = params.m;
 params.L = params.l;
 params.T = sqrt(params.L/params.g);
 params.V = params.L/params.T;
 params.A = params.L/params.T^2;
-params.Ibar = params.T^2;
+params.Ibar = params.I/(params.M * params.L^2);
 
 params.minF = 0;
 params.maxF = 2*params.m*params.g;
@@ -38,9 +39,9 @@ traj = traj_figure8(2, 1, tSpan(2), t_sim, amax, s0);
 state0 = [traj.x(1);traj.y(1);traj.theta(1);
     traj.vx(1);traj.vy(1);traj.omega(1); 0];
 
-[t_out, state_out, u_out] = droneSim(t_ctrl, t_sim, state0, @pd_controller, traj, params);
+[t_out, state_out, state_hat_out, u_out] = droneSim(t_ctrl, t_sim, state0, @pd_controller, traj, params);
 
-% [t_out, state_out, u_out] = droneSim(t_ctrl, t_sim, state0, @lqr_controller, traj, params);
+% [t_out, state_out, state_hat_out, u_out] = droneSim(t_ctrl, t_sim, state0, @lqr_controller, traj, params);
 
 plot_quad(traj, t_out, state_out, u_out)
 
@@ -49,7 +50,7 @@ plot_quad(traj, t_out, state_out, u_out)
 
 t = t_out;            % time vector
 s = state_out(:,1:6);            % states: [x, y, theta, vx, vy, omega]
-arm_length = 0.2;     % quad arm length
+arm_length = params.l;     % quad arm length
 save_video = true;    % set to true to save animation
 video_name = 'quadrotor_trajectory.mp4';
 

@@ -1,4 +1,4 @@
-function [t_out, state_out, u] = droneSim(t_ctrl, t_sim, state0, controller, traj, params)
+function [t_out, state_out, state_hat_out, u] = droneSim(t_ctrl, t_sim, state0, controller, traj, params)
 % tSpan = [t_initial, t_final]
 % t_ctrl = sampling rate
 % t_sim = simulation rate
@@ -30,6 +30,7 @@ Ed = sys_d.B(:,3);
 
 tspan = 0:t_sim:traj.t(end);
 state_out = zeros(size(Ad,1)+1, length(tspan));
+state_hat_out = zeros(size(Ad,1)+1, length(tspan));
 u = zeros(size(Bd,2), length(tspan));
 
 
@@ -41,10 +42,10 @@ u = zeros(size(Bd,2), length(tspan));
 % initialize state_hat with the initial state0
 state_hat = state0;
 state_out(:,1) = state0;
+state_hat_out(:,1) = state0;
 
 % initialize the variance of the estimator Pk
 Pk = eye(7);
-
 
 % simulation loop
 for k = 1:length(tspan)-1
@@ -59,7 +60,7 @@ for k = 1:length(tspan)-1
     if mod(k-1, round(t_ctrl/t_sim)) == 0
         % query desired trajectory point at current timestep
         state_des = trajhandle(t, traj, params);
-        u_curr = controller(state_out(:,k), state_des, params);
+        u_curr = controller(state_hat, state_des, params);
         u(:,k) = u_curr;
     else
         u(:,k) = u(:,k-1);  % ZOH
@@ -77,6 +78,7 @@ for k = 1:length(tspan)-1
     % extended Kalman filter for observed state
     % [state_hat, Pk] = kalman_filter(state_hat, Pk, xytheta, ts, params);
     state_hat = state;
+    state_hat_out(:, k+1) = state_hat;
 
 end
 
