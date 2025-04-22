@@ -58,6 +58,14 @@ for k = 1:length(tspan)-1
 
     % check for controller rate
     if mod(k-1, round(t_ctrl/t_sim)) == 0
+        if k > 1
+            % observer gets x, y, theta value with disturbance
+            xytheta_obs = [state(1) + sigma_x * randn;
+                state(2) + sigma_y * randn;
+                state(3) + sigma_theta * randn];
+            % extended Kalman filter for observed state
+            [state_hat, Pk] = kalman_filter(state_hat, u_curr, xytheta_obs, Pk, t_ctrl, params);
+        end
         % query desired trajectory point at current timestep
         state_des = trajhandle(t, traj, params);
         u_curr = controller(state_hat, state_des, params);
@@ -74,13 +82,6 @@ for k = 1:length(tspan)-1
     state = stateUpdate(state, t_sim, u_curr, params);
     state_out(:, k+1) = state; % state = k+1
 
-    % observer gets x, y, theta value with disturbance
-    xytheta_obs = [state(1) + sigma_x * randn;
-        state(2) + sigma_y * randn;
-        state(3) + sigma_theta * randn];
-
-    % extended Kalman filter for observed state
-    [state_hat, Pk] = kalman_filter(state_hat, u_curr, xytheta_obs, Pk, t_sim, params);
     % state_hat = state; % assume we know every state, for debugging
     state_hat_out(:, k+1) = state_hat;
 

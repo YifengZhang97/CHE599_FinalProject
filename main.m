@@ -29,7 +29,7 @@ t_sim = 1e-4;
 
 % controller params
 params.Kp = [30,30,150];
-params.Kd = [10,10,40];
+params.Kd = [10,10,20];
 
 % trajectory generation
 vmax = 2; amax = 2; s0 = [0;5;0;0;0;0];
