@@ -45,7 +45,7 @@ state_out(:,1) = state0;
 state_hat_out(:,1) = state0;
 
 % initialize the variance of the estimator Pk
-Pk = eye(7);
+Pk = 0.01 * eye(7);
 
 % simulation loop
 for k = 1:length(tspan)-1
@@ -61,28 +61,33 @@ for k = 1:length(tspan)-1
         % query desired trajectory point at current timestep
         state_des = trajhandle(t, traj, params);
         u_curr = controller(state_hat, state_des, params);
+        % rotor force clamping
+        u_curr = u_clamp(u_curr, params);
+        % record to u
         u(:,k) = u_curr;
     else
         u(:,k) = u(:,k-1);  % ZOH
     end
 
+
     % update true state using discretied dynamics within function - k+1
-    [state, u_curr] = stateUpdate(state, t_sim, u(:,k), params);
+    state = stateUpdate(state, t_sim, u_curr, params);
     state_out(:, k+1) = state; % state = k+1
 
     % observer gets x, y, theta value with disturbance
-    xytheta = [state(1) + sigma_x * randn;
+    xytheta_obs = [state(1) + sigma_x * randn;
         state(2) + sigma_y * randn;
         state(3) + sigma_theta * randn];
 
     % extended Kalman filter for observed state
-    % [state_hat, Pk] = kalman_filter(state_hat, Pk, xytheta, ts, params);
-    state_hat = state;
+    [state_hat, Pk] = kalman_filter(state_hat, u_curr, xytheta_obs, Pk, t_sim, params);
+    % state_hat = state; % assume we know every state, for debugging
     state_hat_out(:, k+1) = state_hat;
 
 end
 
-state_out = state_out';
+state_out = state_out.';
+state_hat_out = state_hat_out.';
 u = u';
 t_out = tspan;
 

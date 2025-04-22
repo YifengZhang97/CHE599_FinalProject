@@ -24,8 +24,8 @@ params.sigma_y = 0.01;
 params.sigma_theta = 0.01;
 tSpan = [0, 10];
 
-t_ctrl = 1/5000;
-t_sim = 1/5000;
+t_ctrl = 1e-3;
+t_sim = 1e-4;
 
 % controller params
 params.Kp = [30,30,150];

@@ -1,21 +1,12 @@
-function [nextState, u_out] = stateUpdate(currentState, ts, u, params)
+function nextState = stateUpdate(currentState, ts, u_curr, params)
 
 tau_w = params.tau_w;
 sigma_w = params.sigma_w;
 
 kw_rand = sigma_w * sqrt(2 * ts / tau_w);
-
-% rotor force clamping
-F = u(1); M = u(2);
-u1 = 0.5*(F - M/params.l);
-u2 = 0.5*(F + M/params.l);
-
-u1_clamped = min(max(params.minF/2, u1), params.maxF/2);
-u2_clamped = min(max(params.minF/2, u2), params.maxF/2);
-
-F_clamped = u1_clamped + u2_clamped;
-M_clamped = (u2_clamped - u1_clamped)*params.l;
-
+% controller input
+F_clamped = u_curr(1);
+M_clamped = u_curr(2);
 
 if params.normalize
     sdot = [currentState(4);
@@ -40,8 +31,5 @@ nextState = currentState + ts * sdot;
 
 % update the wind error
 nextState(7) = (1-ts/tau_w) * nextState(7) + kw_rand * randn;
-% nextState(7) = 0;
-
-u_out = [F_clamped; M_clamped];
 
 end
