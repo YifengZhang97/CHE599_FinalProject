@@ -1,5 +1,5 @@
-function u = lqr_controller(state, desired_state, params)
-    K = params.K;
+function u = fh_lqr_controller(state, desired_state, params)
+    Kk = params.Kk;
 
     % Desired hover state at desired position
     x_des = [desired_state.x;
@@ -10,5 +10,5 @@ function u = lqr_controller(state, desired_state, params)
              0;
              0];
 
-    u = -1*K * (state - x_des);
+    u = -Kk{params.k} * (state - x_des);
 end

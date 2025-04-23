@@ -19,25 +19,36 @@ end
 
 % Sytem -----------------------------
 [A, B, E] = linearized_dynamics(params);
-C = eye(size(A));
-D = zeros(size(B,1), size(B,2)+1);
-sys_c = ss(A,[B E],C,D);
-sys_d = c2d(sys_c, t_ctrl, 'zoh');
+
+A_aug = [A, E;
+         zeros(1, size(A,2)), -1/params.tau_w];
+
+B_aug = [B;
+         zeros(1, size(B,2))];
+
+G_aug = [zeros(size(A,1),1);
+         params.sigma_w];  % process noise enters through this
+
+sys = ss(A_aug, [B_aug G_aug], eye(7), 0);
+sys_d = c2d(sys, t_sim);
 
 Ad = sys_d.A;
-Bd = sys_d.B(:,1:2);
-Ed = sys_d.B(:,3);
+Bd = sys_d.B(:,1:size(B,2));
+Gd = sys_d.B(:,end);
+
+% LQR controller computation
+Q = diag([100 100 10 10 10 10 0]);
+Qf = Q;
+R = diag([1 1]);
+N = length(traj.t);
+params.K = dlqr(Ad, Bd, Q, R);
+params.Kk = fh_dlqr(Ad, Bd, Q, R, Qf, N);
 
 tspan = 0:t_sim:traj.t(end);
-state_out = zeros(size(Ad,1)+1, length(tspan));
-state_hat_out = zeros(size(Ad,1)+1, length(tspan));
+state_out = zeros(7, length(tspan));
+state_hat_out = zeros(7, length(tspan));
 u = zeros(size(Bd,2), length(tspan));
 
-
-% n = floor((tSpan(2) - tSpan(1)) / ts) + 1;
-% t_out = zeros(n + 1, 1);
-% state_out = zeros(n + 1, length(state0));
-% u_out = zeros(n + 1, 2);
 
 % initialize state_hat with the initial state0
 state_hat = state0;
@@ -49,6 +60,7 @@ Pk = 0.01 * eye(7);
 
 % simulation loop
 for k = 1:length(tspan)-1
+    params.k = k;
     t = tspan(k);
 
     % check simulation stop condition - drone crashing

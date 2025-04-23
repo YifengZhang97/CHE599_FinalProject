@@ -40,8 +40,8 @@ state0 = [traj.x(1);traj.y(1);traj.theta(1);
     traj.vx(1);traj.vy(1);traj.omega(1); 0];
 
 [t_out, state_out, state_hat_out, u_out] = droneSim(t_ctrl, t_sim, state0, @pd_controller, traj, params);
-
 % [t_out, state_out, state_hat_out, u_out] = droneSim(t_ctrl, t_sim, state0, @lqr_controller, traj, params);
+% [t_out, state_out, state_hat_out, u_out] = droneSim(t_ctrl, t_sim, state0, @fh_lqr_controller, traj, params);
 
 plot_quad(traj, t_out, state_out, u_out)
 
