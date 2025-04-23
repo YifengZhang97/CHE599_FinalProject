@@ -1,9 +1,8 @@
-function traj = traj_trap(waypoints, v_max, a_max, params)
+function traj = traj_trap(waypoints, v_max, a_max, dt, params)
 % waypoints = [start, end] positions
 % T = total duration in s
 
 x_start = waypoints(1); x_end = waypoints(2);
-dt = 0.01;
 
 D = x_end - x_start;     % total distance
 dir = sign(D);           % motion direction (+1 or -1)

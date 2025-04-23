@@ -29,7 +29,9 @@ B_aug = [B;
 G_aug = [zeros(size(A,1),1);
          params.sigma_w];  % process noise enters through this
 
-sys = ss(A_aug, [B_aug G_aug], eye(7), 0);
+D = eye(7);
+
+sys = ss(A_aug, [B_aug G_aug], D(1:3,:), 0);
 sys_d = c2d(sys, t_sim);
 
 Ad = sys_d.A;
@@ -37,9 +39,9 @@ Bd = sys_d.B(:,1:size(B,2));
 Gd = sys_d.B(:,end);
 
 % LQR controller computation
-Q = diag([100 100 10 10 10 10 0]);
+Q = diag([25 30 8 5 5 1 0]);
 Qf = Q;
-R = diag([1 1]);
+R = diag([0.05 2]);
 N = length(traj.t);
 params.K = dlqr(Ad, Bd, Q, R);
 params.Kk = fh_dlqr(Ad, Bd, Q, R, Qf, N);
@@ -58,9 +60,10 @@ state_hat_out(:,1) = state0;
 % initialize the variance of the estimator Pk
 Pk = 0.01 * eye(7);
 
+params.ctrl_k = 1;
+
 % simulation loop
 for k = 1:length(tspan)-1
-    params.k = k;
     t = tspan(k);
 
     % check simulation stop condition - drone crashing
@@ -85,6 +88,7 @@ for k = 1:length(tspan)-1
         u_curr = u_clamp(u_curr, params);
         % record to u
         u(:,k) = u_curr;
+        params.ctrl_k = params.ctrl_k + 1;
     else
         u(:,k) = u(:,k-1);  % ZOH
     end

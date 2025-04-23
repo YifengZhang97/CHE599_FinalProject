@@ -10,5 +10,5 @@ function u = fh_lqr_controller(state, desired_state, params)
              0;
              0];
 
-    u = -Kk{params.k} * (state - x_des);
+    u = -Kk{params.ctrl_k} * (state - x_des);
 end

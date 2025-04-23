@@ -1,11 +1,11 @@
 function plot_quad(traj, t_sol, s_sol, u_sol)
 
-% hold on; grid on; fontsize(16,"points")
-% scatter(traj.x,traj.y,'.')
-% ylabel('y-pos [m]')
-% xlabel('x-pos [m]')
-% title('Figure 8 Positions')
-% % legend({'y-vel', 'x-vel'})
+figure; hold on; grid on; fontsize(16,"points")
+scatter(traj.x,traj.y,'.')
+ylabel('y-pos [m]')
+xlabel('x-pos [m]')
+title('Figure 8 Positions')
+% legend({'y-vel', 'x-vel'})
 
 figure; hold on; grid on;fontsize(16,"points")
 scatter(s_sol(:,1), s_sol(:,2), '.')

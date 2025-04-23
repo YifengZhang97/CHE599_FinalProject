@@ -32,17 +32,20 @@ params.Kp = [30,30,150];
 params.Kd = [10,10,20];
 
 % trajectory generation
-vmax = 2; amax = 2; s0 = [0;5;0;0;0;0];
-% traj = traj_trap(tSpan, vmax, amax, params);
-traj = traj_figure8(2, 1, tSpan(2), t_sim, amax, s0);
+vmax = 2; amax = 2; s0 = [0;1;0;0;0;0];
+traj = traj_trap(tSpan, vmax, amax, t_ctrl, params);
+% traj = traj_figure8(2, 1, tSpan(2), t_sim, amax, s0);
 
 state0 = [traj.x(1);traj.y(1);traj.theta(1);
     traj.vx(1);traj.vy(1);traj.omega(1); 0];
 
-[t_out, state_out, state_hat_out, u_out] = droneSim(t_ctrl, t_sim, state0, @pd_controller, traj, params);
+% [t_out, state_out, state_hat_out, u_out] = droneSim(t_ctrl, t_sim, state0, @pd_controller, traj, params);
 % [t_out, state_out, state_hat_out, u_out] = droneSim(t_ctrl, t_sim, state0, @lqr_controller, traj, params);
-% [t_out, state_out, state_hat_out, u_out] = droneSim(t_ctrl, t_sim, state0, @fh_lqr_controller, traj, params);
+[t_out, state_out, state_hat_out, u_out] = droneSim(t_ctrl, t_sim, state0, @fh_lqr_controller, traj, params);
 
+%% Performance evaluation
+
+% [e_pos, ctrl_effort] = controller_evaluate(traj, t_out, state_out, state_hat_out, u_out, params);
 plot_quad(traj, t_out, state_out, u_out)
 
 
