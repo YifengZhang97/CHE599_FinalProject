@@ -1,14 +1,21 @@
 function [state_hat, Pk] = kalman_filter(state_hat, u_curr, xytheta_obs, Pk, ts, params)
 % (1) Prediction
-state_hat = stateUpdate(state_hat, ts, u_curr, params);
+u1 = u_curr(1);
+theta_hat = state_hat(3);
+% calculate the Jacobian
 F = eye(7);
 F(1, 4) = ts;
 F(2, 5) = ts;
 F(3, 6) = ts;
-F(4, 7) = ts / params.m;
+F(4, 7) = ts;
+F(4, 3) = -(u1 + 1) * cos(theta_hat) * ts;
+F(5, 3) = -(u1 + 1) * sin(theta_hat) * ts;
 F(7, 7) = 1 - ts/params.tau_w;
+% the model uncertainty
 Q = zeros(7, 7);
-Q(7, 7) = params.sigma_w^2 * 2 * ts / params.tau_w;
+Q(7, 7) = params.sigma_w^2 * ts;
+% update the state_hat
+state_hat = stateUpdate(state_hat, ts, u_curr, params);
 % update the variance
 Pk = F * Pk * F.' + Q;
 % (2) now observe

@@ -1,4 +1,4 @@
-function [t_out, state_out, state_hat_out, u] = droneSim(t_ctrl, t_sim, state0, controller, traj, params)
+function [t_out, state_out, state_hat_out, u_out] = droneSim(t_ctrl, t_sim, state0, controller, traj, params)
 % tSpan = [t_initial, t_final]
 % t_ctrl = sampling rate
 % t_sim = simulation rate
@@ -17,39 +17,10 @@ else
     error("Invalid state0.")
 end
 
-% Sytem -----------------------------
-[A, B, E] = linearized_dynamics(params);
-
-A_aug = [A, E;
-         zeros(1, size(A,2)), -1/params.tau_w];
-
-B_aug = [B;
-         zeros(1, size(B,2))];
-
-G_aug = [zeros(size(A,1),1);
-         params.sigma_w];  % process noise enters through this
-
-D = eye(7);
-
-sys = ss(A_aug, [B_aug G_aug], D(1:3,:), 0);
-sys_d = c2d(sys, t_sim);
-
-Ad = sys_d.A;
-Bd = sys_d.B(:,1:size(B,2));
-Gd = sys_d.B(:,end);
-
-% LQR controller computation
-Q = diag([25 30 8 5 5 1 0]);
-Qf = Q;
-R = diag([0.05 2]);
-N = length(traj.t);
-params.K = dlqr(Ad, Bd, Q, R);
-params.Kk = fh_dlqr(Ad, Bd, Q, R, Qf, N);
-
 tspan = 0:t_sim:traj.t(end);
 state_out = zeros(7, length(tspan));
 state_hat_out = zeros(7, length(tspan));
-u = zeros(size(Bd,2), length(tspan));
+u_out = zeros(2, length(tspan));
 
 
 % initialize state_hat with the initial state0
@@ -67,9 +38,9 @@ for k = 1:length(tspan)-1
     t = tspan(k);
 
     % check simulation stop condition - drone crashing
-    if state(2) < 0.01
-        break
-    end
+    % if state(2) < 0.01
+    %     break
+    % end
 
     % check for controller rate
     if mod(k-1, round(t_ctrl/t_sim)) == 0
@@ -80,6 +51,7 @@ for k = 1:length(tspan)-1
                 state(3) + sigma_theta * randn];
             % extended Kalman filter for observed state
             [state_hat, Pk] = kalman_filter(state_hat, u_curr, xytheta_obs, Pk, t_ctrl, params);
+            % state_hat = state; % assume we know every state, for debugging
         end
         % query desired trajectory point at current timestep
         state_des = trajhandle(t, traj, params);
@@ -87,25 +59,22 @@ for k = 1:length(tspan)-1
         % rotor force clamping
         u_curr = u_clamp(u_curr, params);
         % record to u
-        u(:,k) = u_curr;
-        params.ctrl_k = params.ctrl_k + 1;
+        u_out(:,k) = u_curr;
     else
-        u(:,k) = u(:,k-1);  % ZOH
+        u_out(:,k) = u_out(:,k-1);  % ZOH
     end
-
 
     % update true state using discretied dynamics within function - k+1
     state = stateUpdate(state, t_sim, u_curr, params);
     state_out(:, k+1) = state; % state = k+1
 
-    % state_hat = state; % assume we know every state, for debugging
     state_hat_out(:, k+1) = state_hat;
 
 end
 
 state_out = state_out.';
 state_hat_out = state_hat_out.';
-u = u';
+u_out = u_out';
 t_out = tspan;
 
 end

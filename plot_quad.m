@@ -10,6 +10,7 @@ title('Figure 8 Positions')
 figure; hold on; grid on;fontsize(16,"points")
 scatter(s_sol(:,1), s_sol(:,2), '.')
 scatter(traj.x, traj.y,'.')
+axis equal
 xlabel('x-pos [m]')
 ylabel('y-pos [m]')
 

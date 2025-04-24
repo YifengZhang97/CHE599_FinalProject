@@ -1,4 +1,4 @@
-function traj = traj_trap(waypoints, v_max, a_max, dt, params)
+function traj = traj_trap(waypoints, v_max, a_max, dt)
 % waypoints = [start, end] positions
 % T = total duration in s
 
@@ -60,15 +60,5 @@ traj.vy = zeros(size(traj.t));
 traj.ay = zeros(size(traj.t));
 traj.theta = zeros(size(traj.t));
 traj.omega = zeros(size(traj.t));
-
-% noramlize
-if params.normalize
-    traj.x = traj.x / params.L;
-    traj.y = traj.y / params.L;
-    traj.vx = traj.vx / params.V;
-    traj.vy = traj.vy / params.V;
-    traj.ax = traj.ax / params.A;
-    traj.ay = traj.ay / params.A;
-end
 
 end
