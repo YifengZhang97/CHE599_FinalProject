@@ -29,8 +29,8 @@ vx = A * omega * cos(omega * t);
 vy = 2 * B * omega * cos(2 * omega * t);
 
 % Acceleration
-ax = -A * omega^2 * sin(omega * t);
-ay = -4 * B * omega^2 * sin(2 * omega * t);
+% ax = -A * omega^2 * sin(omega * t);
+% ay = -4 * B * omega^2 * sin(2 * omega * t);
 
 % Fill trajectory struct
 traj.t = t;
@@ -38,8 +38,8 @@ traj.x = x + s0(1);
 traj.y = y + s0(2);
 traj.vx = vx;
 traj.vy = vy;
-traj.ax = ax;
-traj.ay = ay;
+% traj.ax = ax;
+% traj.ay = ay;
 traj.theta = zeros(size(t));
 traj.omega = zeros(size(t));
 end
