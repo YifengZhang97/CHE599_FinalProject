@@ -60,6 +60,13 @@ for k = 1:length(tspan)-1
             u_curr = params.K * (state_d - state_hat(1:6));
             % rotor force clamping
             u_curr = u_clamp(u_curr, params);
+        elseif strcmp(params.controller, 'lqg-fh')
+            % query desired trajectory point at current timestep
+            state_d = trajhandle(t, traj, params);
+            Kk = params.Kk;
+            u_curr = Kk{k} * (state_d - state_hat(1:6));
+            % rotor force clamping
+            u_curr = u_clamp(u_curr, params);
         elseif strcmp(params.controller, 'mpc')
             % query desired trajectory point at current timestep
             dt_mpc = params.dt_mpc;
