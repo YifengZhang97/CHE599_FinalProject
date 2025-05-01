@@ -1,4 +1,4 @@
-function traj = traj_figure8(A, B, T, dt, a_max, s0)
+function traj_dimless = traj_figure8(A, B, T, dt, a_max, s0, units)
 % Generates a figure-8 trajectory with acceleration capped at a_max
 % Inputs:
 %   A     = half-width
@@ -42,4 +42,13 @@ traj.vy = vy;
 % traj.ay = ay;
 traj.theta = zeros(size(t));
 traj.omega = zeros(size(t));
+
+traj_dimless.t     = traj.t     / units.T;
+traj_dimless.x     = traj.x     / units.L;
+traj_dimless.y     = traj.y     / units.L;
+traj_dimless.vx    = traj.vx    / units.V;
+traj_dimless.vy    = traj.vy    / units.V;
+traj_dimless.theta = traj.theta;                 % radians — no scaling
+traj_dimless.omega = traj.omega * units.T;       % rad/s → dimensionless
+
 end
