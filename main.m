@@ -13,6 +13,7 @@ units.L = params_origin.l;
 units.T = sqrt(params_origin.l / params_origin.g);
 units.V = sqrt(params_origin.l * params_origin.g);
 units.A = params_origin.g;
+units.F = params_origin.m * params_origin.g;
 
 % dimensionless params
 params.I = 1; % params.I_nrom = params.I/(params.M * params.L^2) = 1
@@ -35,10 +36,10 @@ params.dt_sensor = 1e-3 / units.T;
 
 
 % trajectory generation
-vmax = 6; amax = 1; s0 = [0;10;0;0;0;0];
+vmax = 6; amax = 0.25; s0 = [0;10;0;0;0;0];
 % traj = traj_trap([0, 30], vmax, amax, params.dt_sim);
-% traj = traj_figure8(10, 5, 30, params.dt_sim, amax, s0, units);
-traj = traj_spline(20, 30, 0.001);
+traj = traj_figure8(10, 5, 80, params.dt_sim, amax, s0, units);
+% traj = traj_spline(20, 30, 0.001);
 
 
 state0 = [traj.x(1);traj.y(1);traj.theta(1);
@@ -80,7 +81,7 @@ end
 
 %% Performance evaluation
 close all
-% [e_pos, ctrl_effort] = controller_evaluate(traj, t_out, state_out, state_hat_out, u_out, params);
+[e_pos, ctrl_effort] = controller_evaluate(traj, t_out, state_out, u_out, params)
 
 t_phys = t_out * units.T;
 x_phys      = state_out(:,1) * units.L;
@@ -91,8 +92,8 @@ vy_phys     = state_out(:,5) * units.V;
 omega_phys  = state_out(:,6) / units.T;  % angular vel: [rad/s]
 wind_input  = state_out(:,7);  % already dimensionless, only scale if needed
 
-F_phys = u_out(:,1) * units.M * units.A;  % total thrust
-M_phys = u_out(:,2) * units.M * units.L^2;  % torque
+F_phys = u_out(:,1) * units.F;  % total thrust
+M_phys = u_out(:,2) * units.F * units.L;  % torque
 
 dim_state_out = [x_phys y_phys theta_phys vx_phys vy_phys omega_phys wind_input];
 dim_u_out = [F_phys M_phys];
@@ -105,10 +106,10 @@ dim_traj.vy = traj.vy * units.V;
 dim_traj.theta = traj.theta;
 dim_traj.omega = traj.omega / units.T;
 
-plot_quad(dim_traj, t_phys, dim_state_out, dim_u_out)
+% plot_quad(dim_traj, t_phys, dim_state_out, dim_u_out)
 
 %% Quadrotor Animation with Optional Video Saving
-video_save(t_phys, dim_state_out, traj)
+% video_save(t_phys, dim_state_out, dim_traj, params_origin.l)
 
 function [Ad, Bd] = AdBd(params)
 dt_ctrl = params.dt_ctrl;

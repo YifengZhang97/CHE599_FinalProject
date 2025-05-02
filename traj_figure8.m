@@ -43,12 +43,12 @@ traj.vy = vy;
 traj.theta = zeros(size(t));
 traj.omega = zeros(size(t));
 
-traj_dimless.t     = traj.t     / units.T;
-traj_dimless.x     = traj.x     / units.L;
-traj_dimless.y     = traj.y     / units.L;
-traj_dimless.vx    = traj.vx    / units.V;
-traj_dimless.vy    = traj.vy    / units.V;
+traj_dimless.t     = traj.t;
+traj_dimless.x     = traj.x;
+traj_dimless.y     = traj.y;
+traj_dimless.vx    = traj.vx;
+traj_dimless.vy    = traj.vy;
 traj_dimless.theta = traj.theta;                 % radians — no scaling
-traj_dimless.omega = traj.omega * units.T;       % rad/s → dimensionless
+traj_dimless.omega = traj.omega;       % rad/s → dimensionless
 
 end

@@ -1,4 +1,4 @@
-function video_save(t_out, state_out, traj)
+function video_save(t_out, state_out, traj, L)
 
 t = t_out;            % time vector
 s = state_out(:,1:6);            % states: [x, y, theta, vx, vy, omega]
@@ -7,7 +7,9 @@ video_name = 'quadrotor_trajectory.mp4';
 
 % Playback rate
 fps = 30;
-dt_draw = 1 / fps;
+% speed ratio
+speed_ratio = 1;
+dt_draw = 1 / fps * speed_ratio;
 
 % Interpolated time vector
 t_anim = t(1):dt_draw:t(end);
@@ -53,8 +55,8 @@ for i = 1:length(t_anim)
     theta = s_anim(i,3);
 
     % Arm endpoints
-    dx = (1 / 2) * cos(theta);
-    dy = (1 / 2) * sin(theta);
+    dx = L * cos(theta);
+    dy = L * sin(theta);
     x1 = x - dx;  y1 = y - dy;
     x2 = x + dx;  y2 = y + dy;
 
@@ -77,8 +79,9 @@ for i = 1:length(t_anim)
     if save_video
         writeVideo(v, getframe(fig));
     end
-
-    pause(dt_draw);
+    
+    title(sprintf('t = %4.2f sec', (i-1) * dt_draw))
+    % pause(dt_draw);
 end
 
 % Close video writer

@@ -100,6 +100,6 @@ end
 state_out = state_out.';
 state_hat_out = state_hat_out.';
 u_out = u_out';
-t_out = tspan;
+t_out = tspan.';
 
 end
