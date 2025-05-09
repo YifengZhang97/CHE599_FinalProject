@@ -45,26 +45,31 @@ for k = 1:length(tspan)-1
     if mod(k-1, 1000) == 0
         fprintf('t = %8.4f\n', t)
     end
+    if strcmp(params.feedback, 'state')
+        state_fb = state;
+    elseif strcmp(params.feedback, 'observer')
+        state_fb = state_hat;
+    end
     % check for controller rate, apply controller
     if t >= t_ctrl_last + dt_ctrl
         t_ctrl_last = t;
         if strcmp(params.controller, 'pd')
             % query desired trajectory point at current timestep
             state_d = trajhandle(t, traj, params);
-            u_curr = pd_controller(state_hat, state_d, params);
+            u_curr = pd_controller(state_fb, state_d, params);
             % rotor force clamping
             u_curr = u_clamp(u_curr, params);
         elseif strcmp(params.controller, 'lqg')
             % query desired trajectory point at current timestep
             state_d = trajhandle(t, traj, params);
-            u_curr = params.K * (state_d - state_hat(1:6));
+            u_curr = params.K * (state_d - state_fb(1:6));
             % rotor force clamping
             u_curr = u_clamp(u_curr, params);
         elseif strcmp(params.controller, 'lqg-fh')
             % query desired trajectory point at current timestep
             state_d = trajhandle(t, traj, params);
             Kk = params.Kk;
-            u_curr = Kk{k} * (state_d - state_hat(1:6));
+            u_curr = Kk{k} * (state_d - state_fb(1:6));
             % rotor force clamping
             u_curr = u_clamp(u_curr, params);
         elseif strcmp(params.controller, 'mpc')
@@ -73,7 +78,14 @@ for k = 1:length(tspan)-1
             n_horizons = params.n_horizons;
             t_mpc = t + dt_mpc : dt_mpc : t + n_horizons * dt_mpc;
             state_d = trajhandle(t_mpc, traj, params);
-            u_curr = mpc_controller(state_hat, state_d, params);
+            u_curr = mpc_controller(state_fb, state_d, params);
+        elseif strcmp(params.controller, 'mpc_seq')
+            % query desired trajectory point at current timestep
+            dt_mpc = params.dt_mpc;
+            n_horizons = params.n_horizons;
+            t_mpc = t + dt_mpc : dt_mpc : t + n_horizons * dt_mpc;
+            state_d = trajhandle(t_mpc, traj, params);
+            u_curr = mpc_sequential_controller(state_fb, state_d, params);
         end
     end
     % record to u_out

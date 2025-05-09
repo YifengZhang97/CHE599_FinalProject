@@ -1,4 +1,4 @@
-function traj_dimless = traj_figure8(A, B, T, dt, a_max, s0, units)
+function traj_dimless = traj_figure8(A, B, T, dt, a_max, s0)
 % Generates a figure-8 trajectory with acceleration capped at a_max
 % Inputs:
 %   A     = half-width

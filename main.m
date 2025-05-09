@@ -38,7 +38,7 @@ params.dt_sensor = 1e-3 / units.T;
 % trajectory generation
 vmax = 6; amax = 0.25; s0 = [0;10;0;0;0;0];
 % traj = traj_trap([0, 30], vmax, amax, params.dt_sim);
-traj = traj_figure8(10, 5, 80, params.dt_sim, amax, s0, units);
+traj = traj_figure8(10, 5, 80, params.dt_sim, amax, s0);
 % traj = traj_spline(20, 30, 0.001);
 
 
@@ -48,7 +48,8 @@ state0 = [traj.x(1);traj.y(1);traj.theta(1);
 
 
 % controller type
-params.controller = 'lqg';
+params.controller = 'mpc_seq';
+params.feedback = 'state';
 
 % controller params
 if strcmp(params.controller, 'pd')
@@ -62,11 +63,17 @@ elseif strcmp(params.controller, 'lqg')
     [params.Ad, params.Bd] = AdBd(params);
     [params.K, ~, ~] = dlqr(params.Ad, params.Bd, params.Q, params.R);
 elseif strcmp(params.controller, 'mpc')
-    params.dt_mpc = 5e-3 / units.T;
+    params.dt_mpc = 2e-2 / units.T;
     params.dt_ctrl = params.dt_mpc;
     params.n_horizons = 20;
     params.Qmpc = diag([1.0, 1.0, 0.25, 0.001, 0.001, 0.001]);
     params.Rmpc = diag([0.001, 0.001]);
+elseif strcmp(params.controller, 'mpc_seq')
+    params.dt_mpc = 2e-2 / units.T;
+    params.dt_ctrl = params.dt_mpc;
+    params.n_horizons = 20;
+    params.Qmpc = diag([1.0, 1.0, 0.25, 0.001, 0.001, 0.001]);
+    params.Rmpc = diag([0.0001, 0.0001]);
 elseif strcmp(params.controller, 'lqg-fh')
     params.dt_ctrl = params.dt_sensor;
     params.Q = diag([1.0, 1.0, 0.25, 0.001, 0.001, 0.001]);
@@ -79,9 +86,14 @@ end
 
 [t_out, state_out, state_hat_out, u_out] = droneSim(state0, traj, params);
 
+% state_d = trajhandle(t_out, traj, params);
+% state_d = state_d.';
+% err_out = sqrt((state_out(:, 1)-state_d(:,1)).^2 + (state_out(:, 2)-state_d(:, 2)).^2);
+% save mpc_seq_error.mat t_out err_out
+
 %% Performance evaluation
 close all
-[e_pos, ctrl_effort] = controller_evaluate(traj, t_out, state_out, u_out, params)
+[e_pos, ctrl_effort] = controller_evaluate(traj, t_out, state_out, u_out, params);
 
 t_phys = t_out * units.T;
 x_phys      = state_out(:,1) * units.L;
@@ -98,7 +110,7 @@ M_phys = u_out(:,2) * units.F * units.L;  % torque
 dim_state_out = [x_phys y_phys theta_phys vx_phys vy_phys omega_phys wind_input];
 dim_u_out = [F_phys M_phys];
 
-dim_traj.t = traj.t * units.L;
+dim_traj.t = traj.t * units.T;
 dim_traj.x = traj.x * units.L;
 dim_traj.y = traj.y * units.L;
 dim_traj.vx = traj.vx * units.V;
@@ -106,7 +118,7 @@ dim_traj.vy = traj.vy * units.V;
 dim_traj.theta = traj.theta;
 dim_traj.omega = traj.omega / units.T;
 
-% plot_quad(dim_traj, t_phys, dim_state_out, dim_u_out)
+plot_quad(dim_traj, t_phys, dim_state_out, dim_u_out)
 
 %% Quadrotor Animation with Optional Video Saving
 % video_save(t_phys, dim_state_out, dim_traj, params_origin.l)

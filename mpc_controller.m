@@ -18,7 +18,7 @@ dtheta0 = state(6);
 wx0 = state(7);
 s0 = sin(theta0);
 c0 = cos(theta0);
-% calculate the windo perturbation over n_horizons-1
+% calculate the wind perturbation over n_horizons-1
 t_vec = (0:n_horizons-1) * dt_mpc;
 wx = wx0 * exp(-t_vec/tau_w);
 B1W = [zeros(3, n_horizons); wx * dt_mpc; zeros(2, n_horizons)];
@@ -47,8 +47,13 @@ Rblocks = repmat({Rmpc}, 1, n_horizons);
 R_stacked = blkdiag(Rblocks{:});
 H = blkdiag(Q_stacked, R_stacked);
 % f matrix: f^T * x
-f_state_d = Qmpc * state_d;
-f = [-f_state_d(:); zeros(n_u*n_horizons, 1)];
+% f_state_d = Qmpc * state_d;
+% f = [-f_state_d(:); zeros(n_u*n_horizons, 1)];
+% desired u = [-1; 0]
+f_state_d = - Qmpc * state_d;
+u_d = [-ones(1, n_horizons); zeros(1, n_horizons)];
+f_u_d = -Rmpc * u_d;
+f = [f_state_d(:); f_u_d(:)];
 % inequalities constraint
 A_single = [1, -1;
     -1, 1;
